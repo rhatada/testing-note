@@ -9,14 +9,15 @@
 Khorikovのテストピラミッド（単体テスト多め）とは異なり、**統合テストに重心**を置く。
 
 ```
-        /  E2E  \          ← 少数
-       /----------\
-      / 統合テスト  \      ← 最多（ここに重心）
-     /--------------\
-    /   単体テスト   \     ← 中程度（純粋ロジックのみ）
-   /------------------\
-  /  静的解析(TS/ESLint) \ ← 土台
- /----------------------\
+          ___
+         |E2E|            ← 少数
+     ____|___|____
+    |  統合テスト  |       ← 最多（ここに重心）
+     \___________/
+       | 単体  |          ← 中程度（純粋ロジックのみ）
+      _|_______|_
+     |  静的解析  |        ← 土台（TS/ESLint）
+     |___________|
 ```
 
 コンポーネントを単体で検証しても意味が薄いため、統合テストに重心を置く。
@@ -46,6 +47,24 @@ expect(component.state.isOpen).toBe(true);
 await userEvent.click(screen.getByRole("button", { name: "開く" }));
 expect(screen.getByRole("dialog")).toBeVisible();
 ```
+
+> The more your tests resemble the way your software is used, the more confidence they can give you.
+> — Kent C. Dodds
+
+---
+
+## 外部依存（API）の扱い
+
+APIクライアントやfetchを直接モックせず、**ネットワーク層でモックする**（例: MSW）。
+
+```ts
+// MSWでAPIレスポンスを差し替える
+server.use(
+  http.get("/api/users/1", () => HttpResponse.json({ name: "Alice" }))
+);
+```
+
+コンポーネント内部の通信方法（fetch / axios など）を変えてもテストが壊れない。
 
 ---
 
